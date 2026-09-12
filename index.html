@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vouch — subscriptions that re-earn your money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#f4f3f0;--surface:#fff;--ink:#0d0d0f;--ink-2:#46464b;--ink-3:#86868f;
+  --line:#e7e6e2;--line-2:#d6d5cf;
+  --brand:#1f3df0;--brand-hover:#1730c9;--brand-soft:#eaecfe;
+  --renew:#0b8a5a;--renew-bg:#e3f3ec;--hold:#c47d18;--hold-bg:#f8efdd;--cancel:#c0392f;--cancel-bg:#f8e7e4;
+  --card-live:linear-gradient(150deg,#17181c 0%,#232634 55%,#2b3350 100%);
+  --card-dead:linear-gradient(150deg,#e8e7e3 0%,#d9d8d3 100%);
+  --font:'Inter',system-ui,sans-serif;--disp:'Space Grotesk','Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:hidden}
+a{text-decoration:none;color:inherit}button{font-family:inherit;cursor:pointer;border:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);background:rgba(244,243,240,.8);border-bottom:1px solid transparent;transition:border-color .2s}
+.nav.scrolled{border-color:var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+.brand{display:flex;align-items:center;gap:10px}.brand svg{color:var(--ink)}
+.brand-name{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:-.03em}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{font-size:14px;font-weight:500;color:var(--ink-2);transition:color .15s}.nav-links a:hover{color:var(--ink)}
+.nav-cta{display:flex;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;padding:11px 20px;border-radius:11px;transition:transform .06s,box-shadow .18s,background .18s,border-color .18s}
+.btn:active{transform:translateY(1px)}
+.btn-ink{background:var(--ink);color:#fff}.btn-ink:hover{background:#26262c}
+.btn-blue{background:var(--brand);color:#fff;box-shadow:0 6px 18px rgba(31,61,240,.28)}.btn-blue:hover{background:var(--brand-hover);box-shadow:0 12px 30px rgba(31,61,240,.4)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-2)}.btn-ghost:hover{border-color:var(--ink-3)}
+.btn-lg{padding:15px 28px;font-size:15px}
+
+/* hero */
+.hero{position:relative;padding:70px 0 90px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);padding:7px 14px;border-radius:30px;margin-bottom:26px}
+.eyebrow .pip{width:7px;height:7px;border-radius:50%;background:var(--brand);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-in{position:relative;z-index:1;display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center}
+h1{font-family:var(--disp);font-size:clamp(40px,5.6vw,64px);line-height:1.01;letter-spacing:-.035em;font-weight:700;margin-bottom:22px}
+.lede{font-size:19px;color:var(--ink-2);line-height:1.6;max-width:35ch;margin-bottom:32px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+.trust{margin-top:26px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--ink-3)}
+.trust b{color:var(--renew);font-weight:600}
+.trust .sep{width:4px;height:4px;border-radius:50%;background:var(--line-2)}
+
+/* hero card stage — animated lifecycle */
+.stage{position:relative;height:420px;display:grid;place-items:center}
+.vcard{position:absolute;width:348px;aspect-ratio:1.586;border-radius:16px;padding:22px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;isolation:isolate;box-shadow:0 24px 50px rgba(13,13,15,.32)}
+.vcard.live{background:var(--card-live)}
+.vcard.live::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(140deg,rgba(79,107,255,.9),rgba(79,107,255,0) 42%,rgba(255,255,255,.14));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;z-index:2}
+.vcard::after{content:"";position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:26px 26px;mask:radial-gradient(120% 120% at 80% 0%,#000,transparent 70%)}
+.chip{position:absolute;top:60px;left:22px;width:34px;height:26px;border-radius:6px;background:linear-gradient(135deg,#d9c27a,#b8963c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);z-index:1}
+.chip::after{content:"";position:absolute;inset:5px 7px;border:1px solid rgba(90,70,10,.45);border-radius:2px}
+.vlogo{position:absolute;top:56px;right:22px;width:30px;height:30px;z-index:1;filter:brightness(0) invert(1)}
+.vc-top{display:flex;justify-content:space-between;align-items:flex-start;z-index:1}
+.vc-issuer{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.08em}
+.vc-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,.16)}
+.vc-num{font-family:var(--mono);font-size:16.5px;letter-spacing:.16em;z-index:1;margin-top:auto}
+.vc-foot{display:flex;justify-content:space-between;align-items:flex-end;z-index:1}
+.vc-foot span{display:block;font-size:9px;opacity:.7;text-transform:uppercase;letter-spacing:.07em}
+.vc-foot strong{font-family:var(--mono);font-weight:500;font-size:13px}
+.vcard.shed{background:var(--card-dead);color:#6b6a64;transform:translate(-42px,48px) rotate(-8deg);box-shadow:0 16px 32px rgba(13,13,15,.14);z-index:0}
+.vcard.shed .chip{background:linear-gradient(135deg,#b4b3ac,#98978f)}
+.vcard.shed .vc-status{background:rgba(13,13,15,.08)}
+.vcard.shed .vlogo{filter:grayscale(1) opacity(.4)}
+.vcard.shed .stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-10deg);font-family:var(--disp);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:rgba(80,78,70,.55);border:2px solid rgba(120,118,108,.38);border-radius:7px;padding:5px 11px;white-space:nowrap;z-index:3}
+/* floating callouts with connector lines */
+.callout{position:absolute;z-index:5;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px;box-shadow:0 12px 30px rgba(13,13,15,.13);font-size:12px;font-weight:600;display:flex;align-items:center;gap:7px;opacity:0;animation:calloutIn .6s forwards}
+.callout .cdot{width:7px;height:7px;border-radius:50%}
+.callout-1{top:8px;right:-8px;animation-delay:1s}
+.callout-2{bottom:78px;right:-30px;animation-delay:1.5s}
+.callout-3{bottom:-4px;left:-24px;animation-delay:2s}
+@keyframes calloutIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+.decision{position:absolute;bottom:2px;right:-16px;z-index:6;background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px 15px;box-shadow:0 18px 40px rgba(13,13,15,.16);width:220px;opacity:0;animation:calloutIn .6s .6s forwards}
+.d-top{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.d-dot{width:8px;height:8px;border-radius:50%;background:var(--renew)}
+.d-title{font-weight:700;font-size:13px}
+.d-body{font-size:12px;color:var(--ink-2);line-height:1.45}
+
+/* section */
+.section{padding:96px 0}
+.sec-eyebrow{font-size:13px;font-weight:600;color:var(--brand);margin-bottom:14px}
+.sec-title{font-family:var(--disp);font-size:clamp(30px,4vw,46px);line-height:1.06;letter-spacing:-.03em;font-weight:700;max-width:18ch}
+.sec-lede{font-size:17px;color:var(--ink-2);margin-top:16px;max-width:58ch;line-height:1.6}
+.sec-head{margin-bottom:52px}
+.sec-head.center{text-align:center;margin:0 auto 56px}.sec-head.center .sec-title,.sec-head.center .sec-lede{margin-left:auto;margin-right:auto}
+
+/* counters band */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.metric{text-align:center}
+.metric .num{font-family:var(--disp);font-size:clamp(34px,4.4vw,52px);font-weight:700;letter-spacing:-.03em;line-height:1}
+.metric .lbl{font-size:14px;color:var(--ink-2);margin-top:10px}
+
+/* connector diagram */
+.diagram{position:relative;height:440px;margin-top:20px}
+.diagram svg.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wire{stroke:var(--line-2);stroke-width:2;fill:none;stroke-dasharray:6 6;opacity:.6}
+.wire-flow{stroke:var(--brand);stroke-width:2.5;fill:none;stroke-dasharray:8 200;stroke-dashoffset:200;filter:drop-shadow(0 0 4px rgba(31,61,240,.5))}
+.in .wire-flow{animation:flow 2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-200}}
+.hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;width:104px;height:104px;border-radius:26px;background:var(--ink);display:grid;place-items:center;box-shadow:0 20px 50px rgba(13,13,15,.34)}
+.hub svg{color:#fff;width:52px;height:52px}
+.hub::after{content:"";position:absolute;inset:-8px;border-radius:32px;border:1.5px solid var(--brand);opacity:0;animation:ring 3s ease-out infinite}
+.in .hub::after{opacity:.6}
+@keyframes ring{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.3);opacity:0}}
+.node{position:absolute;z-index:2;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 15px;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;box-shadow:0 8px 22px rgba(13,13,15,.12);opacity:0;transform:scale(.9)}
+.in .node{animation:nodeIn .5s forwards}
+@keyframes nodeIn{to{opacity:1;transform:none}}
+.node img{width:20px;height:20px;object-fit:contain}
+.node .letter{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:#fff;font-family:var(--disp);font-weight:700;font-size:10px}
+.n1{top:6%;left:6%}.n2{top:2%;right:8%}.n3{top:40%;left:2%}.n4{top:38%;right:2%}
+.n5{bottom:8%;left:8%}.n6{bottom:3%;right:10%}
+.in .n1{animation-delay:.1s}.in .n2{animation-delay:.25s}.in .n3{animation-delay:.4s}.in .n4{animation-delay:.55s}.in .n5{animation-delay:.7s}.in .n6{animation-delay:.85s}
+
+/* problem band */
+.band{background:var(--ink);color:#fff}.band .sec-eyebrow{color:#8ea0ff}
+.band-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.band-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:30px}
+.band-card .k{font-family:var(--mono);font-size:12px;color:#7f89c9;display:block;margin-bottom:16px}
+.band-card h3{font-family:var(--disp);font-size:21px;margin-bottom:10px;font-weight:600}
+.band-card p{color:#b7b6c4;font-size:15px;line-height:1.6}
+
+/* steps with drawn flow line */
+.steps{position:relative;display:grid;gap:16px}
+.step{display:grid;grid-template-columns:56px 1fr;gap:22px;align-items:start;padding:26px;background:var(--surface);border:1px solid var(--line);border-radius:16px;position:relative}
+.step-n{width:44px;height:44px;border-radius:12px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:18px;z-index:1}
+.step h3{font-family:var(--disp);font-size:19px;font-weight:600;margin-bottom:6px}
+.step p{color:var(--ink-2);font-size:14.5px;line-height:1.6;max-width:64ch}
+
+/* verdicts interactive */
+.verdicts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.verdict{border-radius:15px;padding:24px;border:1px solid var(--line);transition:transform .2s,box-shadow .2s;cursor:default}
+.verdict:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(13,13,15,.1)}
+.verdict.r{background:var(--renew-bg)}.verdict.h{background:var(--hold-bg)}.verdict.c{background:var(--cancel-bg)}
+.v-tag{font-family:var(--mono);font-size:12px;font-weight:600;margin-bottom:12px;display:inline-flex;align-items:center;gap:6px}
+.v-tag .vd{width:8px;height:8px;border-radius:50%}
+.verdict.r .v-tag{color:var(--renew)}.verdict.r .vd{background:var(--renew)}
+.verdict.h .v-tag{color:var(--hold)}.verdict.h .vd{background:var(--hold)}
+.verdict.c .v-tag{color:var(--cancel)}.verdict.c .vd{background:var(--cancel)}
+.verdict p{font-size:14px;color:var(--ink-2);line-height:1.55}.verdict p b{color:var(--ink);font-weight:600}
+
+/* features with arrows */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.feat:hover{transform:translateY(-4px);box-shadow:0 16px 34px rgba(13,13,15,.1);border-color:var(--line-2)}
+.feat-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:18px;background:var(--ink);color:#fff;transition:background .2s}
+.feat:hover .feat-ic{background:var(--brand)}
+.feat h3{font-family:var(--disp);font-size:17px;font-weight:600;margin-bottom:8px}
+.feat p{color:var(--ink-2);font-size:14px;line-height:1.6}
+
+/* cta */
+.cta{padding:80px 0}
+.cta-box{position:relative;background:var(--ink);border-radius:26px;padding:70px 40px;text-align:center;overflow:hidden}
+.cta-box::before{content:"";position:absolute;top:-140px;right:-40px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(31,61,240,.36),transparent 62%)}
+.cta-box::after{content:"";position:absolute;bottom:-180px;left:-80px;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(31,61,240,.2),transparent 62%)}
+.cta-box h2{position:relative;z-index:1;font-family:var(--disp);font-size:clamp(30px,4vw,48px);line-height:1.06;letter-spacing:-.03em;color:#fff;margin-bottom:16px}
+.cta-box p{position:relative;z-index:1;color:#b7b6c4;font-size:17px;margin-bottom:32px;max-width:46ch;margin-inline:auto}
+.cta-box .hero-ctas{position:relative;z-index:1;justify-content:center}
+
+footer{padding:44px 0;border-top:1px solid var(--line)}
+.foot-in{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.foot-links{display:flex;gap:26px}.foot-links a{font-size:13.5px;color:var(--ink-3)}.foot-links a:hover{color:var(--ink)}
+.foot-copy{font-size:13px;color:var(--ink-3)}
+.foot-stack{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:5px}
+
+@media(max-width:900px){
+  .hero-in{grid-template-columns:1fr;gap:40px}.stage{height:360px}
+  .nav-links{display:none}
+  .metrics{grid-template-columns:repeat(2,1fr);gap:32px}
+  .band-grid,.feat-grid,.verdicts{grid-template-columns:1fr}
+  .diagram{height:auto;display:flex;flex-direction:column;gap:12px}
+  .diagram svg.wires{display:none}.hub{position:relative;inset:auto;transform:none;margin:0 auto 10px}
+  .node{position:relative!important;inset:auto!important;opacity:1;transform:none;animation:none}
+  .lede{max-width:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="wrap nav-in">
+  <div class="brand"><svg width="30" height="30" viewBox="0 0 100 100" fill="none"><path fill-rule="evenodd" fill="currentColor" d="M48.874 97.217C48.824 97.154 48.556 96.709 48.278 96.228C48.001 95.747 47.202 94.381 46.504 93.192C45.805 92.003 44.739 90.182 44.135 89.144C43.53 88.107 42.383 86.141 41.585 84.775C40.787 83.408 39.647 81.442 39.051 80.405C37.116 77.039 36.419 75.85 32.031 68.445C30.298 65.52 29.94 64.907 28.562 62.511C28.067 61.651 27.125 60.037 26.468 58.924C25.811 57.81 25.078 56.569 24.839 56.164C24.6 55.759 24.074 54.848 23.67 54.14C23.266 53.431 21.888 51.051 20.607 48.85C19.327 46.649 18.063 44.476 17.799 44.02C15.805 40.582 11.884 33.975 9.965 30.819C7.704 27.101 6.954 25.899 5.802 24.149C4.424 22.055 3.523 20.046 3.079 18.077C2.878 17.185 2.8 14.84 2.939 13.887C3.346 11.101 4.864 8.475 7.143 6.613C9.069 5.039 11.85 3.782 14.541 3.27C16.786 2.842 17.14 2.826 25.575 2.787C30.002 2.766 33.912 2.762 34.263 2.777L34.901 2.806L33.941 3.869C32.671 5.275 31.724 6.525 30.938 7.832C29.432 10.336 28.696 13.087 28.82 15.746C28.955 18.613 29.891 21.173 32.063 24.609C37.63 33.415 37.897 33.854 49.632 53.45C57.209 66.102 58.232 67.974 59.237 71.03C60.041 73.471 60.265 75.735 59.903 77.741C59.481 80.074 58.736 81.713 56.352 85.557C52.977 90.995 50.577 94.882 49.861 96.067C49.441 96.763 49.067 97.332 49.031 97.332C48.994 97.332 48.924 97.28 48.874 97.217ZM65.62 68.33C65.213 67.609 64.125 65.653 63.202 63.983C62.279 62.314 60.996 60.037 60.352 58.924C59.707 57.81 58.671 56.01 58.05 54.922C57.429 53.834 56.526 52.261 56.045 51.426C55.564 50.591 54.28 48.356 53.193 46.458C52.106 44.561 50.781 42.263 50.249 41.352C49.716 40.442 48.216 37.854 46.915 35.603C45.614 33.351 44.269 31.033 43.926 30.451C43.583 29.869 43.098 29.041 42.847 28.611C42.253 27.591 41.182 25.87 40.07 24.149C38.632 21.925 37.803 20.076 37.347 18.077C37.068 16.853 37.003 14.748 37.207 13.527C37.749 10.29 39.567 7.552 42.462 5.617C44.464 4.278 46.841 3.415 49.744 2.973C50.598 2.843 51.976 2.817 59.652 2.786C68.23 2.751 68.563 2.756 68.438 2.916C68.366 3.007 68.017 3.413 67.661 3.818C65.058 6.786 63.615 9.403 62.97 12.328C62.765 13.259 62.683 16.025 62.83 17.036C63.134 19.113 63.973 21.315 65.385 23.738C65.788 24.43 67.397 27.057 68.764 29.255C69.37 30.229 71.549 33.796 73.43 36.891C74.214 38.181 74.919 39.249 74.997 39.264C75.098 39.284 75.581 38.527 76.641 36.688C78.663 33.179 78.784 32.938 78.706 32.579C78.671 32.42 77.175 30.096 75.382 27.414C71.978 22.324 71.356 21.261 70.794 19.572C69.615 16.031 70.094 12.348 72.127 9.336C73.984 6.583 77.038 4.604 80.548 3.877C82.724 3.426 84.657 3.424 86.867 3.87C90.892 4.682 94.278 7.16 95.975 10.534C96.813 12.2 97.18 13.799 97.177 15.777C97.174 17.287 96.999 18.4 96.551 19.746C96.056 21.232 95.353 22.502 92.916 26.311C92.345 27.203 88.61 33.207 85.849 37.672C81.924 44.017 79.291 48.366 72.106 60.368C69.055 65.463 66.515 69.634 66.46 69.636C66.405 69.639 66.027 69.051 65.62 68.33Z"/></svg><span class="brand-name">Vouch</span></div>
+  <div class="nav-links"><a href="#how">How it works</a><a href="#connect">Connectors</a><a href="#decisions">Decisions</a><a href="#features">Features</a></div>
+  <div class="nav-cta"><a href="#app" class="btn btn-ghost">Sign in</a><a href="#app" class="btn btn-ink">Open the app</a></div>
+</div></nav>
+
+<header class="hero"><div class="wrap hero-in">
+  <div class="reveal in">
+    <span class="eyebrow"><span class="pip"></span> Subscription guardian for the agent era</span>
+    <h1>Every subscription has to re-earn your money.</h1>
+    <p class="lede">Each one lives on a card that dies after a single charge. When a renewal comes due, Vouch checks whether you actually used it — then renews, holds, or cancels, and tells you why.</p>
+    <div class="hero-ctas"><a href="#app" class="btn btn-blue btn-lg">Open the app</a><a href="#how" class="btn btn-ghost btn-lg">See how it works</a></div>
+    <div class="trust"><span><b>$44 saved</b> this month</span><span class="sep"></span><span>Real card never touches the agent</span><span class="sep"></span><span>One-charge blast radius</span></div>
+  </div>
+  <div class="stage">
+    <div class="vcard shed">
+      <div class="chip"></div><div class="stamp">Single use spent</div>
+      <div class="vc-top"><span class="vc-issuer"><svg width="14" height="14" viewBox="0 0 100 100"><path fill-rule="evenodd" fill="#6b6a64" d="M48.874 97.217C48.824 97.154 48.556 96.709 48.278 96.228C48.001 95.747 47.202 94.381 46.504 93.192C45.805 92.003 44.739 90.182 44.135 89.144C43.53 88.107 42.383 86.141 41.585 84.775C40.787 83.408 39.647 81.442 39.051 80.405C37.116 77.039 36.419 75.85 32.031 68.445C30.298 65.52 29.94 64.907 28.562 62.511C28.067 61.651 27.125 60.037 26.468 58.924C25.811 57.81 25.078 56.569 24.839 56.164C24.6 55.759 24.074 54.848 23.67 54.14C23.266 53.431 21.888 51.051 20.607 48.85C19.327 46.649 18.063 44.476 17.799 44.02C15.805 40.582 11.884 33.975 9.965 30.819C7.704 27.101 6.954 25.899 5.802 24.149C4.424 22.055 3.523 20.046 3.079 18.077C2.878 17.185 2.8 14.84 2.939 13.887C3.346 11.101 4.864 8.475 7.143 6.613C9.069 5.039 11.85 3.782 14.541 3.27C16.786 2.842 17.14 2.826 25.575 2.787C30.002 2.766 33.912 2.762 34.263 2.777L34.901 2.806L33.941 3.869C32.671 5.275 31.724 6.525 30.938 7.832C29.432 10.336 28.696 13.087 28.82 15.746C28.955 18.613 29.891 21.173 32.063 24.609C37.63 33.415 37.897 33.854 49.632 53.45C57.209 66.102 58.232 67.974 59.237 71.03C60.041 73.471 60.265 75.735 59.903 77.741C59.481 80.074 58.736 81.713 56.352 85.557C52.977 90.995 50.577 94.882 49.861 96.067C49.441 96.763 49.067 97.332 49.031 97.332C48.994 97.332 48.924 97.28 48.874 97.217ZM65.62 68.33C65.213 67.609 64.125 65.653 63.202 63.983C62.279 62.314 60.996 60.037 60.352 58.924C59.707 57.81 58.671 56.01 58.05 54.922C57.429 53.834 56.526 52.261 56.045 51.426C55.564 50.591 54.28 48.356 53.193 46.458C52.106 44.561 50.781 42.263 50.249 41.352C49.716 40.442 48.216 37.854 46.915 35.603C45.614 33.351 44.269 31.033 43.926 30.451C43.583 29.869 43.098 29.041 42.847 28.611C42.253 27.591 41.182 25.87 40.07 24.149C38.632 21.925 37.803 20.076 37.347 18.077C37.068 16.853 37.003 14.748 37.207 13.527C37.749 10.29 39.567 7.552 42.462 5.617C44.464 4.278 46.841 3.415 49.744 2.973C50.598 2.843 51.976 2.817 59.652 2.786C68.23 2.751 68.563 2.756 68.438 2.916C68.366 3.007 68.017 3.413 67.661 3.818C65.058 6.786 63.615 9.403 62.97 12.328C62.765 13.259 62.683 16.025 62.83 17.036C63.134 19.113 63.973 21.315 65.385 23.738C65.788 24.43 67.397 27.057 68.764 29.255C69.37 30.229 71.549 33.796 73.43 36.891C74.214 38.181 74.919 39.249 74.997 39.264C75.098 39.284 75.581 38.527 76.641 36.688C78.663 33.179 78.784 32.938 78.706 32.579C78.671 32.42 77.175 30.096 75.382 27.414C71.978 22.324 71.356 21.261 70.794 19.572C69.615 16.031 70.094 12.348 72.127 9.336C73.984 6.583 77.038 4.604 80.548 3.877C82.724 3.426 84.657 3.424 86.867 3.87C90.892 4.682 94.278 7.16 95.975 10.534C96.813 12.2 97.18 13.799 97.177 15.777C97.174 17.287 96.999 18.4 96.551 19.746C96.056 21.232 95.353 22.502 92.916 26.311C92.345 27.203 88.61 33.207 85.849 37.672C81.924 44.017 79.291 48.366 72.106 60.368C69.055 65.463 66.515 69.634 66.46 69.636C66.405 69.639 66.027 69.051 65.62 68.33Z"/></svg> VOUCH</span><span class="vc-status">Spent</span></div>
+      <div class="vc-num">•••• •••• •••• ✕✕✕✕</div>
+      <div class="vc-foot"><div><span>Merchant</span><strong>Peloton</strong></div><div><span>Closed after</span><strong>1 charge</strong></div></div>
+    </div>
+    <div class="vcard live">
+      <div class="chip"></div>
+      <img class="vlogo" src="assets/logos/spotify.svg" alt="">
+      <div class="vc-top"><span class="vc-issuer"><svg width="14" height="14" viewBox="0 0 100 100"><path fill-rule="evenodd" fill="#fff" d="M48.874 97.217C48.824 97.154 48.556 96.709 48.278 96.228C48.001 95.747 47.202 94.381 46.504 93.192C45.805 92.003 44.739 90.182 44.135 89.144C43.53 88.107 42.383 86.141 41.585 84.775C40.787 83.408 39.647 81.442 39.051 80.405C37.116 77.039 36.419 75.85 32.031 68.445C30.298 65.52 29.94 64.907 28.562 62.511C28.067 61.651 27.125 60.037 26.468 58.924C25.811 57.81 25.078 56.569 24.839 56.164C24.6 55.759 24.074 54.848 23.67 54.14C23.266 53.431 21.888 51.051 20.607 48.85C19.327 46.649 18.063 44.476 17.799 44.02C15.805 40.582 11.884 33.975 9.965 30.819C7.704 27.101 6.954 25.899 5.802 24.149C4.424 22.055 3.523 20.046 3.079 18.077C2.878 17.185 2.8 14.84 2.939 13.887C3.346 11.101 4.864 8.475 7.143 6.613C9.069 5.039 11.85 3.782 14.541 3.27C16.786 2.842 17.14 2.826 25.575 2.787C30.002 2.766 33.912 2.762 34.263 2.777L34.901 2.806L33.941 3.869C32.671 5.275 31.724 6.525 30.938 7.832C29.432 10.336 28.696 13.087 28.82 15.746C28.955 18.613 29.891 21.173 32.063 24.609C37.63 33.415 37.897 33.854 49.632 53.45C57.209 66.102 58.232 67.974 59.237 71.03C60.041 73.471 60.265 75.735 59.903 77.741C59.481 80.074 58.736 81.713 56.352 85.557C52.977 90.995 50.577 94.882 49.861 96.067C49.441 96.763 49.067 97.332 49.031 97.332C48.994 97.332 48.924 97.28 48.874 97.217ZM65.62 68.33C65.213 67.609 64.125 65.653 63.202 63.983C62.279 62.314 60.996 60.037 60.352 58.924C59.707 57.81 58.671 56.01 58.05 54.922C57.429 53.834 56.526 52.261 56.045 51.426C55.564 50.591 54.28 48.356 53.193 46.458C52.106 44.561 50.781 42.263 50.249 41.352C49.716 40.442 48.216 37.854 46.915 35.603C45.614 33.351 44.269 31.033 43.926 30.451C43.583 29.869 43.098 29.041 42.847 28.611C42.253 27.591 41.182 25.87 40.07 24.149C38.632 21.925 37.803 20.076 37.347 18.077C37.068 16.853 37.003 14.748 37.207 13.527C37.749 10.29 39.567 7.552 42.462 5.617C44.464 4.278 46.841 3.415 49.744 2.973C50.598 2.843 51.976 2.817 59.652 2.786C68.23 2.751 68.563 2.756 68.438 2.916C68.366 3.007 68.017 3.413 67.661 3.818C65.058 6.786 63.615 9.403 62.97 12.328C62.765 13.259 62.683 16.025 62.83 17.036C63.134 19.113 63.973 21.315 65.385 23.738C65.788 24.43 67.397 27.057 68.764 29.255C69.37 30.229 71.549 33.796 73.43 36.891C74.214 38.181 74.919 39.249 74.997 39.264C75.098 39.284 75.581 38.527 76.641 36.688C78.663 33.179 78.784 32.938 78.706 32.579C78.671 32.42 77.175 30.096 75.382 27.414C71.978 22.324 71.356 21.261 70.794 19.572C69.615 16.031 70.094 12.348 72.127 9.336C73.984 6.583 77.038 4.604 80.548 3.877C82.724 3.426 84.657 3.424 86.867 3.87C90.892 4.682 94.278 7.16 95.975 10.534C96.813 12.2 97.18 13.799 97.177 15.777C97.174 17.287 96.999 18.4 96.551 19.746C96.056 21.232 95.353 22.502 92.916 26.311C92.345 27.203 88.61 33.207 85.849 37.672C81.924 44.017 79.291 48.366 72.106 60.368C69.055 65.463 66.515 69.634 66.46 69.636C66.405 69.639 66.027 69.051 65.62 68.33Z"/></svg> VOUCH</span><span class="vc-status">Active</span></div>
+      <div class="vc-num">•••• •••• •••• 4021</div>
+      <div class="vc-foot"><div><span>Merchant</span><strong>Spotify</strong></div><div><span>Renews in</span><strong>2d</strong></div></div>
+    </div>
+    <div class="callout callout-1"><span class="cdot" style="background:var(--renew)"></span>Usage checked</div>
+    <div class="callout callout-2"><span class="cdot" style="background:var(--brand)"></span>Fresh card minted</div>
+    <div class="callout callout-3"><span class="cdot" style="background:var(--hold)"></span>Or held for you</div>
+    <div class="decision">
+      <div class="d-top"><span class="d-dot"></span><span class="d-title">Renewed Spotify</span></div>
+      <div class="d-body">47 plays in 30 days, price unchanged. New card minted.</div>
+    </div>
+  </div>
+</div></header>
+
+<!-- METRICS -->
+<section class="section" style="padding-top:20px;padding-bottom:60px"><div class="wrap">
+  <div class="metrics reveal">
+    <div class="metric"><div class="num" data-count="44" data-prefix="$">$0</div><div class="lbl">saved this month</div></div>
+    <div class="metric"><div class="num" data-count="5" data-suffix="">0</div><div class="lbl">subscriptions guarded</div></div>
+    <div class="metric"><div class="num" data-count="1" data-suffix="">0</div><div class="lbl">charge, then the card dies</div></div>
+    <div class="metric"><div class="num" data-count="100" data-suffix="%">0%</div><div class="lbl">of decisions explained</div></div>
+  </div>
+</div></section>
+
+<!-- CONNECTOR DIAGRAM -->
+<section class="section band" id="connect"><div class="wrap">
+  <div class="sec-head center reveal"><div class="sec-eyebrow">Connected to everything that matters</div><h2 class="sec-title">Vouch reads the whole picture.</h2><p class="sec-lede">It pulls usage, receipts, and balances from the tools you already use — then makes one call on every renewal.</p></div>
+  <div class="diagram reveal" id="diagram">
+    <svg class="wires" viewBox="0 0 1000 440" preserveAspectRatio="none">
+      <path class="wire" d="M120 60 L500 220"/><path class="wire" d="M820 40 L500 220"/>
+      <path class="wire" d="M40 190 L500 220"/><path class="wire" d="M960 185 L500 220"/>
+      <path class="wire" d="M150 390 L500 220"/><path class="wire" d="M820 410 L500 220"/>
+      <path class="wire-flow" d="M120 60 L500 220"/><path class="wire-flow" d="M820 40 L500 220"/>
+      <path class="wire-flow" d="M40 190 L500 220"/><path class="wire-flow" d="M960 185 L500 220"/>
+      <path class="wire-flow" d="M150 390 L500 220"/><path class="wire-flow" d="M820 410 L500 220"/>
+    </svg>
+    <div class="hub"><svg viewBox="0 0 100 100" fill="none"><path fill-rule="evenodd" fill="currentColor" d="M48.874 97.217C48.824 97.154 48.556 96.709 48.278 96.228C48.001 95.747 47.202 94.381 46.504 93.192C45.805 92.003 44.739 90.182 44.135 89.144C43.53 88.107 42.383 86.141 41.585 84.775C40.787 83.408 39.647 81.442 39.051 80.405C37.116 77.039 36.419 75.85 32.031 68.445C30.298 65.52 29.94 64.907 28.562 62.511C28.067 61.651 27.125 60.037 26.468 58.924C25.811 57.81 25.078 56.569 24.839 56.164C24.6 55.759 24.074 54.848 23.67 54.14C23.266 53.431 21.888 51.051 20.607 48.85C19.327 46.649 18.063 44.476 17.799 44.02C15.805 40.582 11.884 33.975 9.965 30.819C7.704 27.101 6.954 25.899 5.802 24.149C4.424 22.055 3.523 20.046 3.079 18.077C2.878 17.185 2.8 14.84 2.939 13.887C3.346 11.101 4.864 8.475 7.143 6.613C9.069 5.039 11.85 3.782 14.541 3.27C16.786 2.842 17.14 2.826 25.575 2.787C30.002 2.766 33.912 2.762 34.263 2.777L34.901 2.806L33.941 3.869C32.671 5.275 31.724 6.525 30.938 7.832C29.432 10.336 28.696 13.087 28.82 15.746C28.955 18.613 29.891 21.173 32.063 24.609C37.63 33.415 37.897 33.854 49.632 53.45C57.209 66.102 58.232 67.974 59.237 71.03C60.041 73.471 60.265 75.735 59.903 77.741C59.481 80.074 58.736 81.713 56.352 85.557C52.977 90.995 50.577 94.882 49.861 96.067C49.441 96.763 49.067 97.332 49.031 97.332C48.994 97.332 48.924 97.28 48.874 97.217ZM65.62 68.33C65.213 67.609 64.125 65.653 63.202 63.983C62.279 62.314 60.996 60.037 60.352 58.924C59.707 57.81 58.671 56.01 58.05 54.922C57.429 53.834 56.526 52.261 56.045 51.426C55.564 50.591 54.28 48.356 53.193 46.458C52.106 44.561 50.781 42.263 50.249 41.352C49.716 40.442 48.216 37.854 46.915 35.603C45.614 33.351 44.269 31.033 43.926 30.451C43.583 29.869 43.098 29.041 42.847 28.611C42.253 27.591 41.182 25.87 40.07 24.149C38.632 21.925 37.803 20.076 37.347 18.077C37.068 16.853 37.003 14.748 37.207 13.527C37.749 10.29 39.567 7.552 42.462 5.617C44.464 4.278 46.841 3.415 49.744 2.973C50.598 2.843 51.976 2.817 59.652 2.786C68.23 2.751 68.563 2.756 68.438 2.916C68.366 3.007 68.017 3.413 67.661 3.818C65.058 6.786 63.615 9.403 62.97 12.328C62.765 13.259 62.683 16.025 62.83 17.036C63.134 19.113 63.973 21.315 65.385 23.738C65.788 24.43 67.397 27.057 68.764 29.255C69.37 30.229 71.549 33.796 73.43 36.891C74.214 38.181 74.919 39.249 74.997 39.264C75.098 39.284 75.581 38.527 76.641 36.688C78.663 33.179 78.784 32.938 78.706 32.579C78.671 32.42 77.175 30.096 75.382 27.414C71.978 22.324 71.356 21.261 70.794 19.572C69.615 16.031 70.094 12.348 72.127 9.336C73.984 6.583 77.038 4.604 80.548 3.877C82.724 3.426 84.657 3.424 86.867 3.87C90.892 4.682 94.278 7.16 95.975 10.534C96.813 12.2 97.18 13.799 97.177 15.777C97.174 17.287 96.999 18.4 96.551 19.746C96.056 21.232 95.353 22.502 92.916 26.311C92.345 27.203 88.61 33.207 85.849 37.672C81.924 44.017 79.291 48.366 72.106 60.368C69.055 65.463 66.515 69.634 66.46 69.636C66.405 69.639 66.027 69.051 65.62 68.33Z"/></svg></div>
+    <div class="node n1"><img src="assets/logos/spotify.svg" alt="">Spotify usage</div>
+    <div class="node n2"><span class="letter" style="background:#ea4335">G</span>Gmail receipts</div>
+    <div class="node n3"><span class="letter" style="background:#0b8a5a">B</span>Bank balance</div>
+    <div class="node n4"><img src="assets/logos/claude.svg" alt="">Claude MCP</div>
+    <div class="node n5"><img src="assets/logos/netflix.svg" alt="">Netflix usage</div>
+    <div class="node n6"><span class="letter" style="background:#1f3df0">L</span>Lithic cards</div>
+  </div>
+</div></section>
+
+<!-- PROBLEM -->
+<section class="section"><div class="wrap">
+  <div class="sec-head reveal"><div class="sec-eyebrow">The problem</div><h2 class="sec-title">Two problems. One dead card.</h2></div>
+  <div class="band-grid">
+    <div class="band-card reveal d1" style="background:#fff;border-color:var(--line)"><span class="k" style="color:var(--brand)">Zombie subscriptions</span><h3 style="color:var(--ink)">You pay for what you forgot</h3><p style="color:var(--ink-2)">The gym you don't visit, the app you stopped opening. Other tools nag you to cancel — they still make you do the deciding.</p></div>
+    <div class="band-card reveal d2" style="background:#fff;border-color:var(--line)"><span class="k" style="color:var(--brand)">Agents with real cards</span><h3 style="color:var(--ink)">One bad prompt drains an account</h3><p style="color:var(--ink-2)">As AI agents start paying for things, a stored card with no controls is a liability. A card that dies after one charge caps the blast radius to exactly one.</p></div>
+  </div>
+</div></section>
+
+<!-- HOW -->
+<section class="section band" id="how"><div class="wrap">
+  <div class="sec-head reveal"><div class="sec-eyebrow">How it works</div><h2 class="sec-title">A dead card turns every renewal into a decision.</h2><p class="sec-lede">The card is the enforcement layer. The memory is the intelligence layer. Together, a subscription has to justify itself.</p></div>
+  <div class="steps">
+    <div class="step reveal d1" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)"><div class="step-n" style="background:var(--brand)">1</div><div><h3 style="color:#fff">Each subscription gets its own card</h3><p style="color:#b7b6c4">The merchant charges it once. Then the card closes. Nothing can silently auto-renew.</p></div></div>
+    <div class="step reveal d2" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)"><div class="step-n" style="background:var(--brand)">2</div><div><h3 style="color:#fff">The renewal bounces off a closed card</h3><p style="color:#b7b6c4">When the merchant tries to bill again, the charge declines — and that decline triggers a decision.</p></div></div>
+    <div class="step reveal d3" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)"><div class="step-n" style="background:var(--brand)">3</div><div><h3 style="color:#fff">Vouch reads your real usage</h3><p style="color:#b7b6c4">It pulls your history — plays, rides, logins — scores the renewal against price changes and overlap, and decides.</p></div></div>
+    <div class="step reveal d4" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)"><div class="step-n" style="background:var(--brand)">4</div><div><h3 style="color:#fff">Renew, hold, or ask — with the reason</h3><p style="color:#b7b6c4">Worth it? A fresh card is minted and the charge goes through. Not worth it? Vouch asks you out loud, and you cancel in one word.</p></div></div>
+  </div>
+</div></section>
+
+<!-- DECISIONS -->
+<section class="section" id="decisions"><div class="wrap">
+  <div class="sec-head reveal"><div class="sec-eyebrow">Plain-English decisions</div><h2 class="sec-title">It always shows its work.</h2></div>
+  <div class="verdicts">
+    <div class="verdict r reveal d1"><div class="v-tag"><span class="vd"></span>Renewed</div><p><b>Spotify.</b> 47 plays in 30 days, price unchanged. New card minted and charged.</p></div>
+    <div class="verdict h reveal d2"><div class="v-tag"><span class="vd"></span>Held</div><p><b>Peloton.</b> 0 rides since July 3. Price up 15%. You also pay for ClassPass.</p></div>
+    <div class="verdict c reveal d3"><div class="v-tag"><span class="vd"></span>Asked</div><p><b>NYT.</b> 3 articles in 30 days and the price just jumped 25% to $17. Worth keeping?</p></div>
+  </div>
+</div></section>
+
+<!-- FEATURES -->
+<section class="section" id="features" style="padding-top:0"><div class="wrap">
+  <div class="sec-head reveal"><div class="sec-eyebrow">What's inside</div><h2 class="sec-title">Built to say no when it should.</h2></div>
+  <div class="feat-grid">
+    <div class="feat reveal d1"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="17" height="13" rx="2"/><path d="M2 8h17"/></svg></div><h3>Single-use cards</h3><p>Every subscription sits on its own card that closes after one charge. The blast radius is exactly one card.</p></div>
+    <div class="feat reveal d2"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="8.5"/><path d="M10.5 5.5v5l3 2"/></svg></div><h3>Usage-aware memory</h3><p>Vouch remembers how you actually use each service, so the decision reflects real behavior — not a default.</p></div>
+    <div class="feat reveal d3"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2a3 3 0 013 3v5.5a3 3 0 01-6 0V5a3 3 0 013-3z"/><path d="M5 9.5v1a5.5 5.5 0 0011 0v-1M10.5 18v3"/></svg></div><h3>Voice at the moment</h3><p>When a call needs you, Vouch asks out loud with the number. Answer "renew" or "cancel" in a word.</p></div>
+    <div class="feat reveal d1"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16l5-5 4 3 6-7"/></svg></div><h3>Budget you can see</h3><p>Category caps and a live spend chart show what you commit — and what Vouch kept in your pocket.</p></div>
+    <div class="feat reveal d2"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="8.5"/><path d="M7 10.5l2.5 2.5 5-5"/></svg></div><h3>Live transaction feed</h3><p>Every charge, decline, and refund streams in as your issuer authorizes it, tagged and explained.</p></div>
+    <div class="feat reveal d3"><div class="feat-ic"><svg width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a7 7 0 0114 0M8 11l2.5 2.5L16 8"/></svg></div><h3>You override anything</h3><p>Every decision is yours to reverse, and the reason is always on screen. Vouch earns auto-renew over time.</p></div>
+  </div>
+</div></section>
+
+<!-- CTA -->
+<section class="cta" id="app"><div class="wrap"><div class="cta-box reveal">
+  <h2>Give your agent a reason to say no.</h2>
+  <p>Open the dashboard and watch every subscription re-earn its charge — or get held for your call.</p>
+  <div class="hero-ctas"><a href="#" class="btn btn-blue btn-lg" id="openApp">Open the app</a><a href="#how" class="btn btn-ghost btn-lg" style="background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.2)">Watch the demo</a></div>
+</div></div></section>
+
+<footer><div class="wrap foot-in">
+  <div><div class="brand"><svg width="22" height="22" viewBox="0 0 100 100" fill="none"><path fill-rule="evenodd" fill="currentColor" d="M48.874 97.217C48.824 97.154 48.556 96.709 48.278 96.228C48.001 95.747 47.202 94.381 46.504 93.192C45.805 92.003 44.739 90.182 44.135 89.144C43.53 88.107 42.383 86.141 41.585 84.775C40.787 83.408 39.647 81.442 39.051 80.405C37.116 77.039 36.419 75.85 32.031 68.445C30.298 65.52 29.94 64.907 28.562 62.511C28.067 61.651 27.125 60.037 26.468 58.924C25.811 57.81 25.078 56.569 24.839 56.164C24.6 55.759 24.074 54.848 23.67 54.14C23.266 53.431 21.888 51.051 20.607 48.85C19.327 46.649 18.063 44.476 17.799 44.02C15.805 40.582 11.884 33.975 9.965 30.819C7.704 27.101 6.954 25.899 5.802 24.149C4.424 22.055 3.523 20.046 3.079 18.077C2.878 17.185 2.8 14.84 2.939 13.887C3.346 11.101 4.864 8.475 7.143 6.613C9.069 5.039 11.85 3.782 14.541 3.27C16.786 2.842 17.14 2.826 25.575 2.787C30.002 2.766 33.912 2.762 34.263 2.777L34.901 2.806L33.941 3.869C32.671 5.275 31.724 6.525 30.938 7.832C29.432 10.336 28.696 13.087 28.82 15.746C28.955 18.613 29.891 21.173 32.063 24.609C37.63 33.415 37.897 33.854 49.632 53.45C57.209 66.102 58.232 67.974 59.237 71.03C60.041 73.471 60.265 75.735 59.903 77.741C59.481 80.074 58.736 81.713 56.352 85.557C52.977 90.995 50.577 94.882 49.861 96.067C49.441 96.763 49.067 97.332 49.031 97.332C48.994 97.332 48.924 97.28 48.874 97.217ZM65.62 68.33C65.213 67.609 64.125 65.653 63.202 63.983C62.279 62.314 60.996 60.037 60.352 58.924C59.707 57.81 58.671 56.01 58.05 54.922C57.429 53.834 56.526 52.261 56.045 51.426C55.564 50.591 54.28 48.356 53.193 46.458C52.106 44.561 50.781 42.263 50.249 41.352C49.716 40.442 48.216 37.854 46.915 35.603C45.614 33.351 44.269 31.033 43.926 30.451C43.583 29.869 43.098 29.041 42.847 28.611C42.253 27.591 41.182 25.87 40.07 24.149C38.632 21.925 37.803 20.076 37.347 18.077C37.068 16.853 37.003 14.748 37.207 13.527C37.749 10.29 39.567 7.552 42.462 5.617C44.464 4.278 46.841 3.415 49.744 2.973C50.598 2.843 51.976 2.817 59.652 2.786C68.23 2.751 68.563 2.756 68.438 2.916C68.366 3.007 68.017 3.413 67.661 3.818C65.058 6.786 63.615 9.403 62.97 12.328C62.765 13.259 62.683 16.025 62.83 17.036C63.134 19.113 63.973 21.315 65.385 23.738C65.788 24.43 67.397 27.057 68.764 29.255C69.37 30.229 71.549 33.796 73.43 36.891C74.214 38.181 74.919 39.249 74.997 39.264C75.098 39.284 75.581 38.527 76.641 36.688C78.663 33.179 78.784 32.938 78.706 32.579C78.671 32.42 77.175 30.096 75.382 27.414C71.978 22.324 71.356 21.261 70.794 19.572C69.615 16.031 70.094 12.348 72.127 9.336C73.984 6.583 77.038 4.604 80.548 3.877C82.724 3.426 84.657 3.424 86.867 3.87C90.892 4.682 94.278 7.16 95.975 10.534C96.813 12.2 97.18 13.799 97.177 15.777C97.174 17.287 96.999 18.4 96.551 19.746C96.056 21.232 95.353 22.502 92.916 26.311C92.345 27.203 88.61 33.207 85.849 37.672C81.924 44.017 79.291 48.366 72.106 60.368C69.055 65.463 66.515 69.634 66.46 69.636C66.405 69.639 66.027 69.051 65.62 68.33Z"/></svg><span class="brand-name" style="font-size:18px">Vouch</span></div><div class="foot-stack">Lithic · Backboard · Gemini · Tiger Data · ElevenLabs</div></div>
+  <div class="foot-links"><a href="#how">How it works</a><a href="#features">Features</a><a href="#app">Open app</a></div>
+  <div class="foot-copy">Built at HackRice 16 · Fintech</div>
+</div></footer>
+
+<script>
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>12));
+
+  // scroll reveal
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.16});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // count-up metrics
+  const cio=new IntersectionObserver((es)=>{es.forEach(e=>{
+    if(!e.isIntersecting)return; cio.unobserve(e.target);
+    e.target.querySelectorAll('[data-count]').forEach(el=>{
+      const end=+el.dataset.count, pre=el.dataset.prefix||'', suf=el.dataset.suffix||''; let t0=null;
+      const step=(t)=>{if(!t0)t0=t;const p=Math.min((t-t0)/1100,1);const v=Math.round(p*end);el.textContent=pre+v+suf;if(p<1)requestAnimationFrame(step)};
+      requestAnimationFrame(step);
+    });
+  })},{threshold:.4});
+  document.querySelectorAll('.metrics').forEach(el=>cio.observe(el));
+
+  document.getElementById('openApp').addEventListener('click',e=>{e.preventDefault();alert('In production this links to your Vouch dashboard. Wire it to /app or your deployed URL.');});
+</script>
+</body>
+</html>
